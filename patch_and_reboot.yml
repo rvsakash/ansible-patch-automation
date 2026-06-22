@@ -1,0 +1,41 @@
+---
+- name: Production Rolling Patch aur Reboot Playbook
+  hosts: client_nodes
+  become: yes
+  serial: 1
+  gather_facts: yes
+
+  tasks:
+    - name: Ubuntu/Debian packages update aur upgrade karein
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: dist
+        autoremove: yes
+      when: ansible_os_family == "Debian"
+
+    - name: RHEL/CentOS/Rocky Linux packages upgrade karein
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        autoremove: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Server ko safe reboot karein
+      ansible.builtin.reboot:
+        msg: "Ansible automated patching ke baad system reboot ho raha hai."
+        connect_timeout: 10
+        reboot_timeout: 600
+        pre_reboot_delay: 5
+        post_reboot_delay: 15
+        test_command: whoami
+
+    - name: SSH port (22) active hai ya nahi check karein
+      delegate_to: localhost
+      become: no
+      ansible.builtin.wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 22
+        state: started
+        delay: 5
+        timeout: 60
+
