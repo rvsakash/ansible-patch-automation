@@ -1,5 +1,5 @@
 [client_nodes]
-192.168.1.7 ansible_user=hpuser
+10.220.2.13 ansible_user=hpuser
 
 [client_nodes:vars]
 ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
